@@ -1,5 +1,7 @@
 #include "bpe.h"
 
+#include <cassert>
+
 RE2 re(
     "('s|'t|'re|'ve|'m|'ll|'d| ?\\p{L}+| ?\\p{N}+| "
     "?[^\\s\\p{L}\\p{N}]+|\\s+\\(?!\\S\\)|\\s+)");
@@ -139,6 +141,17 @@ void test_load_vocab() {
   assert(i2t[1] == "\"");
 }
 
+void test_load_json_vocab() {
+  std::unordered_map<std::string, int> t2i;
+  std::unordered_map<int, std::string> i2t;
+  std::fstream vocab_txt("/tmp/my_vocab.json", std::ios::in);
+  load_json_vocab(vocab_txt, &t2i, &i2t);
+  assert(t2i.size() == 7);
+  assert(i2t.size() == 7);
+  assert(t2i["\n"] == 5);
+  assert(i2t[5] == "\n");
+}
+
 void test_encode_decode() {
   BPERanks bpe_ranks;
   std::fstream merges("/tmp/merges.txt", std::ios::in);
@@ -174,6 +187,7 @@ int main() {
   test_bpe();
   test_tokenize();
   test_load_vocab();
+  test_load_json_vocab();
   test_encode_decode();
   return 0;
 }

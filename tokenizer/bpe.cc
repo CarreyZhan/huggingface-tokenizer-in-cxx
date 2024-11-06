@@ -1,4 +1,5 @@
 #include "bpe.h"
+#include "nlohmann_json/json.hpp"
 
 std::wstring utf8_to_wstring(const std::string& str) {
   std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
@@ -172,6 +173,21 @@ void tokenize(const std::string& text, RE2& re, BPERanks& bpe_ranks,
     i = text.find(eot, s);
   }
   _tokenize(text.substr(s), re, bpe_ranks, b2u, result);
+}
+
+void load_json_vocab(std::istream& ins, std::unordered_map<std::string, int>* t2i,
+                     std::unordered_map<int, std::string>* i2t) {
+  t2i->clear();
+  i2t->clear();
+
+  nlohmann::json vocab = nlohmann::json::parse(ins);
+
+  std::string token;
+  for (const auto& [key, value] : vocab.items()) {
+    token = key;
+    t2i->insert({token, value});
+    i2t->insert({value, token});
+  }
 }
 
 void load_vocab(std::istream& ins, std::unordered_map<std::string, int>* t2i,
