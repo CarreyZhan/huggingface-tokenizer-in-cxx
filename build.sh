@@ -94,6 +94,31 @@ function build_for_macos() {
     fi
 }
 
+function build_for_android() {
+    arch=$1
+    label=android-"$arch"
+    build_dir="$BUILD_DIR"/"$label"
+
+    test_file="$build_dir"/tokenizer.framework/tokenizer
+    if test -f "$test_file" && lipo -info "$test_file"; then
+        echo "Skip building iree.framework for $label."
+    else
+        echo "┌------------------------------------------------------------------------------┐"
+        echo "  Building for $label ..."
+        echo "   src: $SRC_DIR "
+        echo "   build: $build_dir "
+        echo "   build log: $build_dir/build.log"
+        echo "└------------------------------------------------------------------------------┘"
+        mkdir -p "$build_dir" # So to create the build.log file.
+        cmake -S . \
+            -B "$build_dir" \
+            -DCMAKE_TOOLCHAIN_FILE=~/Library/Android/sdk/ndk/27.1.12297006/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI="arm64-v8a" \
+            -DANDROID_NATIVE_API_LEVEL=android-34 >"$build_dir"/build.log 2>&1
+        cmake --build "$build_dir" >"$build_dir"/build.log 2>&1
+    fi
+}
+
 function merge_fat_static_library() {
     src_label=$2
     dst_label=$1
@@ -127,6 +152,7 @@ build_for_ios sim x86_64
 build_for_ios dev arm64
 build_for_macos x86_64
 build_for_macos arm64
+build_for_android arm64
 
 # Step 2. Merge the frameworks of the same OS platform
 #  ios-simulator-arm64+x86_64

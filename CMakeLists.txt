@@ -19,6 +19,11 @@ target_compile_features(tokenizer PUBLIC cxx_std_11)
 target_include_directories(tokenizer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/re2)
 set_target_properties(tokenizer PROPERTIES SOVERSION ${SONAME} VERSION ${SONAME}.0.0)
 
+add_library(tokenizer_shared SHARED tokenizer/bpe.cc tokenizer/bpe.h ${RE2_SOURCES})
+target_compile_features(tokenizer_shared PUBLIC cxx_std_11)
+target_include_directories(tokenizer_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/re2)
+target_link_libraries(tokenizer_shared PRIVATE re2::re2)
+
 if(APPLE)
   set_target_properties(tokenizer PROPERTIES
     FRAMEWORK TRUE
